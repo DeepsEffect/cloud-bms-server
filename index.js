@@ -35,9 +35,9 @@ async function run() {
       .db("cloudDB")
       .collection("apartmentCollection");
 
-    app.get("/apartments", (req, res) => {
-      const result = apartmentCollection.find().toArray();
-      req.send(result);
+    app.get("/apartments", async(req, res) => {
+      const result = await apartmentCollection.find().toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
@@ -47,7 +47,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
