@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, Timestamp } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -34,9 +34,38 @@ async function run() {
     const apartmentCollection = client
       .db("cloudDB")
       .collection("apartmentCollection");
+    const usersCollection = client.db("cloudDB").collection("users");
 
-    app.get("/apartments", async(req, res) => {
+    // get the apartment data
+    app.get("/apartments", async (req, res) => {
       const result = await apartmentCollection.find().toArray();
+      res.send(result);
+    });
+
+    // save a user data in the db
+    app.put("/user", async (req, res) => {
+      const user = req.body;
+      const query = { email: user?.email };
+      // check if the user already in the db
+      const isExists = await usersCollection.findOne(query);
+      if (isExists) {
+        return res.send(isExists);
+      }
+      // save the user for the first time
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...user,
+          timestamp: Date.now(),
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
+    // get all the users data
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
       res.send(result);
     });
 
