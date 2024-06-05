@@ -78,6 +78,14 @@ async function run() {
     // post agreement data
     app.post("/agreement", async (req, res) => {
       const agreement = req.body;
+      const query = { userEmail: agreement.userEmail };
+      // Check if the user already has an agreement
+      const existingAgreement = await agreementCollection.findOne(query);
+      if (existingAgreement) {
+        return res
+          .status(400)
+          .send({ message: "User has already applied for an apartment." });
+      }
       const result = await agreementCollection.insertOne(agreement);
       res.send(result);
     });
