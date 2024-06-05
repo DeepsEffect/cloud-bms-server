@@ -1,7 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion, Timestamp } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  Timestamp,
+  ObjectId,
+} = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -34,6 +39,7 @@ async function run() {
     const apartmentCollection = client
       .db("cloudDB")
       .collection("apartmentCollection");
+    const agreementCollection = client.db("cloudDB").collection("agreements");
     const usersCollection = client.db("cloudDB").collection("users");
 
     // get the apartment data
@@ -66,6 +72,19 @@ async function run() {
     // get all the users data
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post agreement data
+    app.post("/agreement", async (req, res) => {
+      const agreement = req.body;
+      const result = await agreementCollection.insertOne(agreement);
+      res.send(result);
+    });
+
+    // getting the agreements data
+    app.get("/agreements", async (req, res) => {
+      const result = await agreementCollection.find().toArray();
       res.send(result);
     });
 
