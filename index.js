@@ -89,9 +89,9 @@ async function run() {
       // Check if the user already has an agreement
       const existingAgreement = await agreementCollection.findOne(query);
       if (existingAgreement) {
-        return res
-          .status(400)
-          .send({ message: "User has already applied for an apartment." });
+        return res.status(400).send({
+          message: "User has already made agreement for an apartment.",
+        });
       }
       const result = await agreementCollection.insertOne(agreement);
       res.send(result);
@@ -101,6 +101,28 @@ async function run() {
     app.get("/agreements", async (req, res) => {
       const result = await agreementCollection.find().toArray();
       res.send(result);
+    });
+
+    // admin related api
+    // check agreement status
+    app.patch("/agreements/:id", async (req, res) => {
+      const id = req.params.id;
+      const email = req.body.userEmail;
+      console.log(email);
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "checked",
+          checkedTime: Date.now(),
+        },
+      };
+      const result = await agreementCollection.updateOne(query, updateDoc);
+      res.send(result);
+      // update the user's role
+      const user = await usersCollection.findOneAndUpdate(
+        { email: email },
+        { $set: { role: "member" } }
+      );
     });
 
     // Send a ping to confirm a successful connection
