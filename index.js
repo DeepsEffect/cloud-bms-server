@@ -41,6 +41,9 @@ async function run() {
       .collection("apartmentCollection");
     const agreementCollection = client.db("cloudDB").collection("agreements");
     const usersCollection = client.db("cloudDB").collection("users");
+    const announcementCollection = client
+      .db("cloudDB")
+      .collection("announcements");
 
     // get the apartment data
     app.get("/apartments", async (req, res) => {
@@ -112,6 +115,19 @@ async function run() {
       res.send(result);
     });
 
+    // removing a member
+    app.patch("/members/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "user",
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // check agreement status / handle approve request
     app.patch("/agreements/:id", async (req, res) => {
       const id = req.params.id;
@@ -143,8 +159,15 @@ async function run() {
           rejectedTime: Date.now(),
         },
       };
-
       const result = await agreementCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // add announcement
+    app.post("/announcement", async (req, res) => {
+      const content = req.body;
+      // console.log(announcement);
+      const result = await announcementCollection.insertOne(content);
       res.send(result);
     });
 
