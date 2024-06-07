@@ -35,7 +35,7 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    // collections
+    //! collections
     const apartmentCollection = client
       .db("cloudDB")
       .collection("apartmentCollection");
@@ -51,6 +51,7 @@ async function run() {
       res.send(result);
     });
 
+    //! user related api
     // save a user data in the db
     app.put("/user", async (req, res) => {
       const user = req.body;
@@ -85,6 +86,7 @@ async function run() {
       res.send(result);
     });
 
+    //! agreements related api
     // post agreement data
     app.post("/agreement", async (req, res) => {
       const agreement = req.body;
