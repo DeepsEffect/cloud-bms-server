@@ -103,8 +103,16 @@ async function run() {
       res.send(result);
     });
 
-    // admin related api
-    // check agreement status
+    //! admin related api
+    // get all the members data
+    app.get("/members", async (req, res) => {
+      const query = req.query;
+      // console.log(query);
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // check agreement status / handle approve request
     app.patch("/agreements/:id", async (req, res) => {
       const id = req.params.id;
       const email = req.body.userEmail;
@@ -112,7 +120,7 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
-          status: "checked",
+          status: "approved",
           checkedTime: Date.now(),
         },
       };
@@ -123,6 +131,21 @@ async function run() {
         { email: email },
         { $set: { role: "member" } }
       );
+    });
+
+    //  reject request related api endpoint
+    app.patch("/agreements/:id/reject", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "rejected",
+          rejectedTime: Date.now(),
+        },
+      };
+
+      const result = await agreementCollection.updateOne(query, updateDoc);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
