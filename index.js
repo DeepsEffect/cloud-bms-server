@@ -47,6 +47,12 @@ async function run() {
       res.send(result);
     });
 
+    // get announcement data
+    app.get('/announcements', async(req, res) => {
+      const result = await announcementCollection.find().toArray();
+      res.send(result)
+    })
+
     //! user related api
     // save a user data in the db
     app.put("/user", async (req, res) => {
