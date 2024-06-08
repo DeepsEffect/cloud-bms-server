@@ -98,9 +98,17 @@ async function run() {
       res.send(result);
     });
 
-    // getting the agreements data
+    // getting agreements data
     app.get("/agreements", async (req, res) => {
       const result = await agreementCollection.find().toArray();
+      res.send(result);
+    });
+
+    // getting a agreement data by email
+    app.get("/agreements/:email", async(req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const result = await agreementCollection.findOne(query);
       res.send(result);
     });
 
