@@ -1,12 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const {
-  MongoClient,
-  ServerApiVersion,
-  Timestamp,
-  ObjectId,
-} = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -44,6 +39,7 @@ async function run() {
     const announcementCollection = client
       .db("cloudDB")
       .collection("announcements");
+    const couponCollection = client.db("cloudDB").collection("coupons");
 
     // get the apartment data
     app.get("/apartments", async (req, res) => {
@@ -170,6 +166,13 @@ async function run() {
       const content = req.body;
       // console.log(announcement);
       const result = await announcementCollection.insertOne(content);
+      res.send(result);
+    });
+
+    // add coupon
+    app.post("/coupon", async (req, res) => {
+      const couponData = req.body;
+      const result = await couponCollection.insertOne(couponData);
       res.send(result);
     });
 
