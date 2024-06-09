@@ -51,6 +51,19 @@ async function run() {
       res.send(result);
     });
 
+    // pagination
+    app.get("/all-apartments", async (req, res) => {
+      const size = parseInt(req.query.size)
+      const page = parseInt(req.query.page) - 1
+      // console.log(size, page);
+      const result = await apartmentCollection.find().skip(page * size).limit(size).toArray();
+      res.send(result);
+    });
+    app.get("/apartments-count", async (req, res) => {
+      const count = await apartmentCollection.countDocuments();
+      res.send({ count });
+    });
+
     // get announcement data
     app.get("/announcements", async (req, res) => {
       const result = await announcementCollection.find().toArray();
