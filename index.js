@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const stripe = require("stripe")(process.env.SECRECT_KEY);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,6 +14,7 @@ app.use(
       "http://localhost:5173",
       "https://could-mbs.web.app",
       "https://cloud-bms.vercel.app",
+      "https://cloud-bms.netlify.app",
     ],
   })
 );
@@ -44,6 +46,7 @@ async function run() {
       .db("cloudDB")
       .collection("announcements");
     const couponCollection = client.db("cloudDB").collection("coupons");
+    const paymentCollection = client.db("cloudDB").collection("payments");
 
     // get the apartment data
     app.get("/apartments", async (req, res) => {
@@ -53,10 +56,14 @@ async function run() {
 
     // pagination
     app.get("/all-apartments", async (req, res) => {
-      const size = parseInt(req.query.size)
-      const page = parseInt(req.query.page) - 1
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
       // console.log(size, page);
-      const result = await apartmentCollection.find().skip(page * size).limit(size).toArray();
+      const result = await apartmentCollection
+        .find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
     });
     app.get("/apartments-count", async (req, res) => {
@@ -114,7 +121,7 @@ async function run() {
       const existingAgreement = await agreementCollection.findOne(query);
       if (existingAgreement) {
         return res.status(400).send({
-          message: "User has already made agreement for an apartment.",
+          message: "You've already made agreement for an apartment",
         });
       }
       const result = await agreementCollection.insertOne(agreement);
@@ -133,6 +140,28 @@ async function run() {
       const query = { userEmail: email };
       const result = await agreementCollection.findOne(query);
       res.send(result);
+    });
+
+    //! payment related api
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    app.post("/payment", async (req, res) => {
+      const payment = req.body;
+      const paymentResult = paymentCollection.insertOne(payment);
+      res.send(paymentResult);
     });
 
     //! admin related api
