@@ -161,7 +161,12 @@ async function run() {
     app.post("/payment", async (req, res) => {
       const payment = req.body;
       const paymentResult = paymentCollection.insertOne(payment);
-      res.send(paymentResult);
+      const updateResult = agreementCollection.findOneAndUpdate(
+        { userEmail: payment.email },
+        { $set: { rent: 0 } },
+        { returnDocument: "after" }
+      );
+      res.send(paymentResult, updateResult);
     });
 
     //! admin related api
