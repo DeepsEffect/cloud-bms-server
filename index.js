@@ -35,7 +35,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
     //! collections
     const apartmentCollection = client
       .db("cloudDB")
@@ -160,13 +160,19 @@ async function run() {
 
     app.post("/payment", async (req, res) => {
       const payment = req.body;
-      const paymentResult = paymentCollection.insertOne(payment);
-      const updateResult = agreementCollection.findOneAndUpdate(
+      const paymentResult = await paymentCollection.insertOne(payment);
+      const updateResult = await agreementCollection.findOneAndUpdate(
         { userEmail: payment.email },
         { $set: { rent: 0 } },
         { returnDocument: "after" }
       );
-      res.send(paymentResult, updateResult);
+      res.send({ paymentResult, updateResult });
+    });
+
+    // get payment history
+    app.get("/payments", async (req, res) => {
+      const payments = await paymentCollection.find().toArray();
+      res.send(payments);
     });
 
     //! admin related api
